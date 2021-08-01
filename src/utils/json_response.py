@@ -1,9 +1,9 @@
 from flask import Response
-import json
+from bson.json_util import dumps, loads
 
 def json_response(data, status=200):
     return Response(
-        json.dumps(data),
+        dumps(data),
         status,
         mimetype="application/json"  
     )
