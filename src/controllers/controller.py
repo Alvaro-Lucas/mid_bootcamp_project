@@ -10,13 +10,27 @@ from app import app
 @handle_error
 #http://127.0.0.1:3500/get?name=Hello&second=World
 def read_db():
+    found = False
     params = type_casting(**dict(request.args))
     if not params:
         raise ValueError("There isn't any query parameters")
     try:
         project = {element: 1 for element in params['project'].split(",")}
+        for element in project:
+            if element == "_id":
+                found = True
+        if not found:
+            project["_id"] = 0
+        params.pop("project")
     except:
         project=None
+    
+    for key, value in params.items():
+            value = value.split(",")
+            if len(value) > 1:
+                params[key] = {'$in': value}
+                print(f"{params[key] = }")
+                break
     
     return json_response(read_database("mid_project", "covid", params, project))
 
