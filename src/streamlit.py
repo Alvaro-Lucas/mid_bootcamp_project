@@ -10,8 +10,12 @@ import re
 import requests
 import json
 
-def get_data_db(query):
-    url = f"http://127.0.0.1:3500/get"
+def get_data_db(query, db_collection = None):
+    if db_collection:
+        url = f"http://127.0.0.1:3500/get/{db_collection}"
+    else:
+        url = f"http://127.0.0.1:3500/get"
+
     res = requests.get(url+f"?{query}")
     if res.status_code >= 200 and res.status_code <= 300:
         return res.json()
@@ -48,8 +52,9 @@ def geospatial_map(geospatial):
         Marker(location=country["geometry"]["coordinates"], tooltip=country["Country/Region"]).add_to(m)
     folium_static(m)
     
-
-st.title("Covid Dashboard Information")
+#st.set_page_config(layout='wide')
+st.markdown("<h1 style='text-align:center'><b>Covid Dashboard Information</b></h1>", unsafe_allow_html=True)
+#st.title("Covid Dashboard Information")
 data = get_data_db("project=Country/Region")
 
 countries = [element["Country/Region"] for element in data]
@@ -68,51 +73,65 @@ if chosen:
         query += i+","
     query = query[:-1]
 
-    data = get_data_db(query)
+    data_global = get_data_db(query)
+    query += "&project=Country/Region,Total"
+    data_deaths = get_data_db(query,"deaths")
+    data_recovered = get_data_db(query,"recovered")
 
     periodo = periodo_days + periodo_months*30
-    if periodo == 0 or periodo > len(data[0])-4:
+    if periodo == 0 or periodo > len(data_global[0])-4:
         periodo = 7
     
-    plt = covid_cases_graph(data, periodo)
+    deaths = pd.DataFrame(data = data_deaths)
+    recovered = pd.DataFrame(data = data_recovered)
+    st.markdown("<h2 style='text-align:center'><b>Deaths</b></h2>", unsafe_allow_html=True)
+    st.table(deaths)
+    st.markdown("<h2 style='text-align:center'><b>Recovered</b></h2>", unsafe_allow_html=True)
+    st.table(recovered)
+
+    plt = covid_cases_graph(data_global, periodo)
     st.pyplot(plt)
 
-    geospatial = geospatial_data(data)
+    geospatial = geospatial_data(data_global)
     geospatial_map(geospatial)
-
-if st.button('Download PDF'):
-    pdf = FPDF()
-    pdf.add_page(orientation="L", format="A3")
-    plt.savefig("Cases_dates.jpg")
-    pdf.image("./Cases_dates.jpg", w=400, h=260)
-    pdf.add_page()
-
-    covid_cases_data = pd.DataFrame(data).drop(columns=["_id", "Lat", "Long"])
-    num_case_date = []
-
-    columns = [column for column in covid_cases_data.columns[1::periodo]]
-    columns.insert(0,covid_cases_data.columns[0])
-    for country in covid_cases_data.values: 
-        cases = [int(case) for case in country[1::periodo]]
-        cases.insert(0,country[0])
-        num_case_date.append(cases)
     
-    pdf.set_font('Arial', 'BIU', 16)
-    pdf.write(16,"Data in JSON format\n")
-    pdf.set_font('Arial', '', 9)
-    for country in range(len(num_case_date)):
-        if country == 0:
-            pdf.write(5, "\n{")
-        pdf.write(5, "\n    {\n")
-        for position in range(len(columns)):
-            if position == len(columns)-1:
-                pdf.write(5, f"        {columns[position]} : {num_case_date[country][position]}\n")
+#cols = st.beta_columns((2,2,2,1,2,2,2))
+cols = st.beta_columns((2,1,2))
+with cols[1]:
+    if st.button('Download PDF'):
+        pdf = FPDF()
+        pdf.add_page(orientation="L", format="A3")
+        plt.savefig("Cases_dates.jpg")
+        pdf.image("./Cases_dates.jpg", w=400, h=260)
+        pdf.add_page()
+
+        covid_cases_data = pd.DataFrame(data_global).drop(columns=["_id", "Lat", "Long"])
+        num_case_date = []
+
+        columns = [column for column in covid_cases_data.columns[1::periodo]]
+        columns.insert(0,covid_cases_data.columns[0])
+        for country in covid_cases_data.values: 
+            cases = [int(case) for case in country[1::periodo]]
+            cases.insert(0,country[0])
+            num_case_date.append(cases)
+        
+        pdf.set_font('Arial', 'BIU', 16)
+        pdf.write(16,"Data in JSON format\n")
+
+        pdf.set_font('Arial', '', 9)
+        for country in range(len(num_case_date)):
+            if country == 0:
+                pdf.write(5, "\n{")
+            pdf.write(5, "\n    {\n")
+            for position in range(len(columns)):
+                if position == len(columns)-1:
+                    pdf.write(5, f'        "{columns[position]}" : {num_case_date[country][position]}\n')
+                else:
+                    pdf.write(5, f'        "{columns[position]}" : {num_case_date[country][position]},\n')
+            if country == len(num_case_date)-1:
+                pdf.write(5, "    }\n")
+                pdf.write(5, "}\n")
             else:
-                pdf.write(5, f"        {columns[position]} : {num_case_date[country][position]},\n")
-        if country == len(num_case_date)-1:
-            pdf.write(5, "    }\n")
-            pdf.write(5, "}\n")
-        else:
-            pdf.write(5, "    },")
-    
-    pdf.output('Covid_Cases_Dashboard.pdf', "I")
+                pdf.write(5, "    },")
+        
+        pdf.output('Covid_Cases_Dashboard.pdf', "I")
