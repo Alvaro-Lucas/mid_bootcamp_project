@@ -31,6 +31,8 @@ def read_db_collection(db_collection):
 def read_db(db_collection = "covid"):
     found = False
     params = type_casting(**dict(request.args))
+    if "All" in params:
+        return json_response(read_database("mid_project", db_collection))
     if not params:
         raise ValueError("There isn't any query parameters")
     try:
@@ -43,7 +45,7 @@ def read_db(db_collection = "covid"):
                 found = True
 
         if "Total" in project:
-            project["7/28/21"] = 1
+            project["8/4/21"] = 1
             project.pop("Total")
 
         if not found:
@@ -54,7 +56,7 @@ def read_db(db_collection = "covid"):
     keys = list(params.keys())
     print(f"{keys = }")
     if "Cases" in keys:
-        params["7/28/21"] = params["Cases"]
+        params["8/4/21"] = params["Cases"]
         params.pop("Cases")
 
     operators = []

@@ -1,4 +1,4 @@
-from folium import Map, Marker
+from folium import Map, Marker, folium
 from fpdf import FPDF, HTMLMixin
 from streamlit_folium import folium_static
 import matplotlib.pyplot as plt
@@ -24,7 +24,7 @@ def get_data_db(query, db_collection = None):
 def covid_cases_graph(data, periodo=30):
     covid_cases_date = pd.DataFrame(data)
     covid_cases_date = covid_cases_date.drop(columns=["_id", "Lat", "Long"])
-    plt.figure(figsize=[20,20])
+    plt.figure(figsize=[20,10])
     columns = [column for column in covid_cases_date.columns[1::periodo]]
     for country in covid_cases_date.values:
         cases = [int(case) for case in country[1::periodo]]
@@ -32,7 +32,6 @@ def covid_cases_graph(data, periodo=30):
         plt.xlabel('Date')
         plt.plot(columns, cases, label=country[0])
         plt.legend()
-
     return plt
 
 def geospatial_data(data):
@@ -52,9 +51,8 @@ def geospatial_map(geospatial):
         Marker(location=country["geometry"]["coordinates"], tooltip=country["Country/Region"]).add_to(m)
     folium_static(m)
     
-#st.set_page_config(layout='wide')
 st.markdown("<h1 style='text-align:center'><b>Covid Dashboard Information</b></h1>", unsafe_allow_html=True)
-#st.title("Covid Dashboard Information")
+
 data = get_data_db("project=Country/Region")
 
 countries = [element["Country/Region"] for element in data]
@@ -77,17 +75,33 @@ if chosen:
     query += "&project=Country/Region,Total"
     data_deaths = get_data_db(query,"deaths")
     data_recovered = get_data_db(query,"recovered")
+    data_cases = get_data_db(query)
 
     periodo = periodo_days + periodo_months*30
     if periodo == 0 or periodo > len(data_global[0])-4:
         periodo = 7
     
+    cases = pd.DataFrame(data = data_cases)
     deaths = pd.DataFrame(data = data_deaths)
     recovered = pd.DataFrame(data = data_recovered)
-    st.markdown("<h2 style='text-align:center'><b>Deaths</b></h2>", unsafe_allow_html=True)
-    st.table(deaths)
-    st.markdown("<h2 style='text-align:center'><b>Recovered</b></h2>", unsafe_allow_html=True)
-    st.table(recovered)
+
+    for countries in chosen:
+        st.markdown(f"\n<h3 style='text-align:center; background-color:orange;'><b>{countries}</b></h3>", unsafe_allow_html=True)
+        data_countries_columns = st.beta_columns(3)
+        with data_countries_columns[0]:
+            st.markdown("<h2 style='text-align:center; background-color:blue;'><b>Cases</b></h2>", unsafe_allow_html=True)
+            num_cases = list(cases[cases['Country/Region'] == countries].values[0])
+            st.markdown(f"<p style='text-align:center'><b>{num_cases[1]}</b></p>", unsafe_allow_html=True)
+        
+        with data_countries_columns[1]:
+            st.markdown("<h2 style='text-align:center; background-color:red;'><b>Deaths</b></h2>", unsafe_allow_html=True)
+            num_deaths = list(deaths[deaths['Country/Region'] == countries].values[0])
+            st.markdown(f"<p style='text-align:center'><b>{num_deaths[1]}</b></p>", unsafe_allow_html=True)
+
+        with data_countries_columns[2]:
+            st.markdown("<h2 style='text-align:center; background-color:green;'><b>Recovered</b></h2>", unsafe_allow_html=True)
+            num_recovered = list(recovered[recovered['Country/Region'] == countries].values[0])
+            st.markdown(f"<p style='text-align:center'><b>{num_recovered[1]}</b></p>", unsafe_allow_html=True)
 
     plt = covid_cases_graph(data_global, periodo)
     st.pyplot(plt)
@@ -95,7 +109,6 @@ if chosen:
     geospatial = geospatial_data(data_global)
     geospatial_map(geospatial)
     
-#cols = st.beta_columns((2,2,2,1,2,2,2))
 cols = st.beta_columns((2,1,2))
 with cols[1]:
     if st.button('Download PDF'):
