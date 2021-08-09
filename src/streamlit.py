@@ -42,7 +42,6 @@ def geospatial_data(data):
         geo["Country/Region"] = country[2]
         geo["geometry"] = {"type": "MultiPolygon", "coordinates": [country[3], country[4]]}
         countries_geo.append(geo)
-    print(f"{countries_geo = }")
     return countries_geo
 
 def geospatial_map(geospatial):
@@ -50,65 +49,142 @@ def geospatial_map(geospatial):
     for country in geospatial:
         Marker(location=country["geometry"]["coordinates"], tooltip=country["Country/Region"]).add_to(m)
     folium_static(m)
+
+def show_dataframe(deaths, vaccination, ccaa_data, ccaa_vac):
+    list_show = []
+    if deaths:
+        if vaccination:
+            for ccaa in range(len(ccaa_data)):
+                data_show = {}
+                for key,value in ccaa_data[ccaa].items():
+                    data_show[key] = str(value)
+
+                for key,value in ccaa_vac[ccaa].items():
+                    data_show[key] = str(value)
+
+                data_show.pop("_id")
+                data_show.pop("Fecha")
+                list_show.append(data_show)
+            dataframe_show = pd.DataFrame(list_show)
+            st.dataframe(dataframe_show)
+        else:
+            for ccaa in range(len(ccaa_data)):
+                data_show = {}
+                for key,value in ccaa_data[ccaa].items():
+                    data_show[key] = str(value)
+                data_show.pop("_id")
+                list_show.append(data_show)
+            dataframe_show = pd.DataFrame(list_show)
+            st.dataframe(dataframe_show)
+    else:
+        if vaccination:
+            for ccaa in range(len(ccaa_data)):
+                data_show = {}
+                for key,value in ccaa_vac[ccaa].items():
+                    data_show[key] = str(value)
+                data_show.pop("_id")
+                data_show.pop("Fecha")
+                list_show.append(data_show)
+            dataframe_show = pd.DataFrame(list_show)
+            st.dataframe(dataframe_show)
     
 st.markdown("<h1 style='text-align:center'><b>Covid Dashboard Information</b></h1>", unsafe_allow_html=True)
 
-data = get_data_db("project=Country/Region")
+pages = st.sidebar.radio("Select the range of the Covid pandemic: ", ["Worldwide", "Spain, Autonomous Community"])
 
-countries = [element["Country/Region"] for element in data]
+if pages == "Worldwide":
+    data = get_data_db("project=Country/Region")
 
-chosen = st.multiselect('Countries', countries)
-st.text('Enter the range of days between the dates (if boths are set at 0, the range will be 7 days)')
-column = st.beta_columns(2)
-with column[0]:
-    periodo_days = st.slider('Days', min_value=0, max_value=30)  
-with column[1]:
-    periodo_months = st.slider('Months', min_value=0, max_value=12)  
+    countries = [element["Country/Region"] for element in data]
 
-if chosen:
-    query = f"Country/Region="
-    for i in chosen:
-        query += i+","
-    query = query[:-1]
+    chosen = st.multiselect('Countries', countries)
+    st.text('Enter the range of days between the dates (if boths are set at 0, the range will be 7 days)')
+    column = st.beta_columns(2)
+    with column[0]:
+        periodo_days = st.slider('Days', min_value=0, max_value=30)  
+    with column[1]:
+        periodo_months = st.slider('Months', min_value=0, max_value=12)  
 
-    data_global = get_data_db(query)
-    query += "&project=Country/Region,Total"
-    data_deaths = get_data_db(query,"deaths")
-    data_recovered = get_data_db(query,"recovered")
-    data_cases = get_data_db(query)
+    if chosen:
+        query = f"Country/Region="
+        for i in chosen:
+            query += i+","
+        query = query[:-1]
 
-    periodo = periodo_days + periodo_months*30
-    if periodo == 0 or periodo > len(data_global[0])-4:
-        periodo = 7
-    
-    cases = pd.DataFrame(data = data_cases)
-    deaths = pd.DataFrame(data = data_deaths)
-    recovered = pd.DataFrame(data = data_recovered)
+        data_global = get_data_db(query)
+        query += "&project=Country/Region,Total"
+        data_deaths = get_data_db(query,"deaths")
+        data_recovered = get_data_db(query,"recovered")
+        data_cases = get_data_db(query)
 
-    for countries in chosen:
-        st.markdown(f"\n<h3 style='text-align:center; background-color:orange;'><b>{countries}</b></h3>", unsafe_allow_html=True)
-        data_countries_columns = st.beta_columns(3)
-        with data_countries_columns[0]:
-            st.markdown("<h2 style='text-align:center; background-color:blue;'><b>Cases</b></h2>", unsafe_allow_html=True)
-            num_cases = list(cases[cases['Country/Region'] == countries].values[0])
-            st.markdown(f"<p style='text-align:center'><b>{num_cases[1]}</b></p>", unsafe_allow_html=True)
+        periodo = periodo_days + periodo_months*30
+        if periodo == 0 or periodo > len(data_global[0])-4:
+            periodo = 7
         
-        with data_countries_columns[1]:
-            st.markdown("<h2 style='text-align:center; background-color:red;'><b>Deaths</b></h2>", unsafe_allow_html=True)
-            num_deaths = list(deaths[deaths['Country/Region'] == countries].values[0])
-            st.markdown(f"<p style='text-align:center'><b>{num_deaths[1]}</b></p>", unsafe_allow_html=True)
+        cases = pd.DataFrame(data = data_cases)
+        deaths = pd.DataFrame(data = data_deaths)
+        recovered = pd.DataFrame(data = data_recovered)
 
-        with data_countries_columns[2]:
-            st.markdown("<h2 style='text-align:center; background-color:green;'><b>Recovered</b></h2>", unsafe_allow_html=True)
-            num_recovered = list(recovered[recovered['Country/Region'] == countries].values[0])
-            st.markdown(f"<p style='text-align:center'><b>{num_recovered[1]}</b></p>", unsafe_allow_html=True)
+        for countries in chosen:
+            st.markdown(f"\n<h3 style='text-align:center; background-color:orange;'><b>{countries}</b></h3>", unsafe_allow_html=True)
+            data_countries_columns = st.beta_columns(3)
+            with data_countries_columns[0]:
+                st.markdown("<h2 style='text-align:center; background-color:blue;'><b>Cases</b></h2>", unsafe_allow_html=True)
+                num_cases = list(cases[cases['Country/Region'] == countries].values[0])
+                st.markdown(f"<p style='text-align:center'><b>{num_cases[1]}</b></p>", unsafe_allow_html=True)
+            
+            with data_countries_columns[1]:
+                st.markdown("<h2 style='text-align:center; background-color:red;'><b>Deaths</b></h2>", unsafe_allow_html=True)
+                num_deaths = list(deaths[deaths['Country/Region'] == countries].values[0])
+                st.markdown(f"<p style='text-align:center'><b>{num_deaths[1]}</b></p>", unsafe_allow_html=True)
 
-    plt = covid_cases_graph(data_global, periodo)
-    st.pyplot(plt)
+            with data_countries_columns[2]:
+                st.markdown("<h2 style='text-align:center; background-color:green;'><b>Recovered</b></h2>", unsafe_allow_html=True)
+                num_recovered = list(recovered[recovered['Country/Region'] == countries].values[0])
+                st.markdown(f"<p style='text-align:center'><b>{num_recovered[1]}</b></p>", unsafe_allow_html=True)
 
-    geospatial = geospatial_data(data_global)
-    geospatial_map(geospatial)
+        plt = covid_cases_graph(data_global, periodo)
+        st.pyplot(plt)
+
+        geospatial = geospatial_data(data_global)
+        geospatial_map(geospatial)
+
+if pages == "Spain, Autonomous Community":
+    data = get_data_db("project=Community", "ccaa_data")
+
+    ca_names = [element["Community"] for element in data]
+    ca_names.insert(0,"All")
+
+    chosen = st.multiselect('Covid at the Autonomous Community in Spain', ca_names)
+
+    selection = ["Deaths", "Vaccination"]
+    default = [True, False]
+    st.write("You must choose one or both if you want the data to show")
+    data_info = st.beta_columns(2)
+    with data_info[0]:
+        deaths_checkbox = st.checkbox("Deaths")
+    with data_info[1]:
+        vaccination_checkbox = st.checkbox("Vaccination")
     
+    if chosen:
+        if "All" in chosen:
+            ccaa_data = get_data_db("All","ccaa_data")
+            ccaa_vac = get_data_db("All","ccaa_vac")
+        else:
+            query = f"Community="
+            for i in chosen:
+                query += i+","
+            query = query[:-1]
+            ccaa_data = get_data_db(query,"ccaa_data")
+            ccaa_vac = get_data_db(query,"ccaa_vac")
+
+        show_dataframe(deaths_checkbox, vaccination_checkbox, ccaa_data, ccaa_vac)
+        
+        geospatial = geospatial_data(ccaa_data)
+        geospatial_map(geospatial)
+
+
+
 cols = st.beta_columns((2,1,2))
 with cols[1]:
     if st.button('Download PDF'):
@@ -147,4 +223,4 @@ with cols[1]:
             else:
                 pdf.write(5, "    },")
         
-        pdf.output('Covid_Cases_Dashboard.pdf', "I")
+        pdf.output("Covid_Cases_Dashboard.pdf",dest="F")

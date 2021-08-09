@@ -15,7 +15,9 @@ dic_operators_to_query ={
 
 dic_db_collection = {
     "deaths":"deaths_covid",
-    "recovered":"recovered_covid"
+    "recovered":"recovered_covid",
+    "ccaa_data":"ccaa_covid_data",
+    "ccaa_vac":"ccaa_covid_vac"
 }
 
 @app.route("/get/<db_collection>")
