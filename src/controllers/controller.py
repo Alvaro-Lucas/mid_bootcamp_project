@@ -6,6 +6,24 @@ from flask import request
 import json
 from app import app
 
+def get_project(params, db_collection):
+    found = False
+    try:
+        project = {element: 1 for element in params['project'].split(",")}
+        params.pop("project")
+        for key, value in project.items():
+            if key == "_id":
+                found = True
+        if "Total" in project:
+            aux = read_database("mid_project", db_collection, {'Country/Region':'Spain'})
+            project[aux[0].popitem()[0]] = 1
+            project.pop("Total")
+        if not found:
+            project["_id"] = 0
+    except Exception:
+        project=None
+    return project
+
 dic_operators_to_query ={
     ">":"$gt",
     ">=":"$gte",
@@ -31,43 +49,25 @@ def read_db_collection(db_collection):
 @app.route("/get")
 @handle_error
 def read_db(db_collection = "covid"):
-    found = False
     params = type_casting(**dict(request.args))
+
+    project = get_project(params, db_collection)
+
     if "All" in params:
-        return json_response(read_database("mid_project", db_collection))
+        return json_response(read_database("mid_project", db_collection, project=project))
     if not params:
         raise ValueError("There isn't any query parameters")
-    try:
-        print(f"{params = }")
-        project = {element: 1 for element in params['project'].split(",")}
-        params.pop("project")
-        print(f"{params = }")
-        for key, value in project.items():
-            if key == "_id":
-                found = True
-
-        if "Total" in project:
-            project["8/4/21"] = 1
-            project.pop("Total")
-
-        if not found:
-            project["_id"] = 0
-    except:
-        project=None
 
     keys = list(params.keys())
-    print(f"{keys = }")
-    if "Cases" in keys:
-        params["8/4/21"] = params["Cases"]
-        params.pop("Cases")
+    if "Cuantity" in keys:
+        aux = read_database("mid_project", db_collection, {'Country/Region':'Spain'})
+        params[aux[0].popitem()[0]] = params["Cuantity"]
+        params.pop("Cuantity")
 
     operators = []
-    print(f"{params = }")
     for key, value in params.items():
         advance_query_dict = {}
-        print(f"{key = }")
         value = value.split(",")
-        print(f"{value = }")
         if value[0] in [">",">=","<", "<="]:
             for op in value[::2]:
                 if op in [">",">=","<", "<="]:
@@ -85,7 +85,6 @@ def read_db(db_collection = "covid"):
             except:
                 advance_query_dict['$in'] = [v for v in value]
         params[key] = advance_query_dict
-        print(f"{advance_query_dict = }")
     return json_response(read_database("mid_project", db_collection, params, project))
 
 #http://127.0.0.1:3500/post?Polaco=cześć&Despedida=Świat
@@ -95,8 +94,15 @@ def write_db():
     params = type_casting(**dict(request.args))
     if not params:
         raise ValueError("There isn't any query parameters")
-    print(params)
-    return json_response(create_data("mid_project", "covid", params), 201)
+    correct_dim = {}
+    for key,value in params.items():
+        correct_value = value.replace('"','').replace("'","")
+        correct_key = key.replace('"','').replace("'","")
+        try:  
+            correct_dim[correct_key] = float(correct_value)
+        except:
+            correct_dim[correct_key] = correct_value 
+    return json_response(create_data("mid_project", "covid", correct_dim), 201)
 
 #http://127.0.0.1:3500/delete?Polaco=cześć
 @app.route("/delete")
@@ -105,7 +111,6 @@ def delete_db():
     condition = type_casting(**dict(request.args))
     if not condition:
         raise ValueError("There isn't any query parameters")
-    print(condition)
     return json_response(delete_data("mid_project", "covid", condition))
 
 #http://127.0.0.1:3500/update?query=name=Hola,second=Mundo&new_data=name=Hello,second=World
@@ -117,5 +122,4 @@ def update_db():
         raise ValueError("There isn't any query parameters")
     query = str_to_dict(params['query'])
     new_data = {"$set":str_to_dict(params['new_data'])}
-    print(f"{new_data = }")
     return json_response(update_data("mid_project", "covid", query, new_data))

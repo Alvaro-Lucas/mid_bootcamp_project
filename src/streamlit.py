@@ -39,22 +39,25 @@ def geospatial_data(data):
     countries_geo = []
     for country in dataframe.itertuples():
         geo = {}
-        geo["Country/Region"] = country[2]
-        geo["geometry"] = {"type": "MultiPolygon", "coordinates": [country[3], country[4]]}
+        geo["Name"] = country[1]
+        geo["geometry"] = {"type": "MultiPolygon", "coordinates": [country[2], country[3]]}
         countries_geo.append(geo)
     return countries_geo
 
 def geospatial_map(geospatial):
     m = Map()
     for country in geospatial:
-        Marker(location=country["geometry"]["coordinates"], tooltip=country["Country/Region"]).add_to(m)
+        Marker(location=country["geometry"]["coordinates"], tooltip=country["Name"]).add_to(m)
     folium_static(m)
 
-def show_dataframe(deaths, vaccination, ccaa_data, ccaa_vac):
+def group_data(deaths = False, vaccination = False, ccaa_data = None, ccaa_vac = None):
     list_show = []
+    dataframe_show = pd.DataFrame()
+
     if deaths:
         if vaccination:
-            for ccaa in range(len(ccaa_data)):
+            num_ccaa = len(ccaa_vac)
+            for ccaa in range(num_ccaa):
                 data_show = {}
                 for key,value in ccaa_data[ccaa].items():
                     data_show[key] = str(value)
@@ -66,19 +69,19 @@ def show_dataframe(deaths, vaccination, ccaa_data, ccaa_vac):
                 data_show.pop("Fecha")
                 list_show.append(data_show)
             dataframe_show = pd.DataFrame(list_show)
-            st.dataframe(dataframe_show)
         else:
-            for ccaa in range(len(ccaa_data)):
+            num_ccaa = len(ccaa_data)
+            for ccaa in range(num_ccaa):
                 data_show = {}
                 for key,value in ccaa_data[ccaa].items():
                     data_show[key] = str(value)
                 data_show.pop("_id")
                 list_show.append(data_show)
             dataframe_show = pd.DataFrame(list_show)
-            st.dataframe(dataframe_show)
     else:
         if vaccination:
-            for ccaa in range(len(ccaa_data)):
+            num_ccaa = len(ccaa_vac)
+            for ccaa in range(num_ccaa):
                 data_show = {}
                 for key,value in ccaa_vac[ccaa].items():
                     data_show[key] = str(value)
@@ -86,14 +89,14 @@ def show_dataframe(deaths, vaccination, ccaa_data, ccaa_vac):
                 data_show.pop("Fecha")
                 list_show.append(data_show)
             dataframe_show = pd.DataFrame(list_show)
-            st.dataframe(dataframe_show)
+    return dataframe_show
     
 st.markdown("<h1 style='text-align:center'><b>Covid Dashboard Information</b></h1>", unsafe_allow_html=True)
 
 pages = st.sidebar.radio("Select the range of the Covid pandemic: ", ["Worldwide", "Spain, Autonomous Community"])
 
 if pages == "Worldwide":
-    data = get_data_db("project=Country/Region")
+    data = get_data_db("All&project=Country/Region")
 
     countries = [element["Country/Region"] for element in data]
 
@@ -145,12 +148,54 @@ if pages == "Worldwide":
 
         plt = covid_cases_graph(data_global, periodo)
         st.pyplot(plt)
+        for country in data_global:
+            country.pop("_id")
 
         geospatial = geospatial_data(data_global)
         geospatial_map(geospatial)
 
+    cols = st.beta_columns((2,1,2))
+    with cols[1]:
+        if st.button('Download PDF'):
+            pdf = FPDF()
+            pdf.add_page(orientation="L", format="A3")
+            plt.savefig("Cases_dates.jpg")
+            pdf.image("./Cases_dates.jpg", w=400, h=260)
+            pdf.add_page()
+
+            covid_cases_data = pd.DataFrame(data_global).drop(columns=["_id", "Lat", "Long"])
+            num_case_date = []
+
+            columns = [column for column in covid_cases_data.columns[1::periodo]]
+            columns.insert(0,covid_cases_data.columns[0])
+            for country in covid_cases_data.values: 
+                cases = [int(case) for case in country[1::periodo]]
+                cases.insert(0,country[0])
+                num_case_date.append(cases)
+            
+            pdf.set_font('Arial', 'BIU', 16)
+            pdf.write(16,"Data in JSON format\n")
+
+            pdf.set_font('Arial', '', 9)
+            for country in range(len(num_case_date)):
+                if country == 0:
+                    pdf.write(5, "\n{")
+                pdf.write(5, "\n    {\n")
+                for position in range(len(columns)):
+                    if position == len(columns)-1:
+                        pdf.write(5, f'        "{columns[position]}" : "{num_case_date[country][position]}"\n')
+                    else:
+                        pdf.write(5, f'        "{columns[position]}" : "{num_case_date[country][position]}",\n')
+                if country == len(num_case_date)-1:
+                    pdf.write(5, "    }\n")
+                    pdf.write(5, "}\n")
+                else:
+                    pdf.write(5, "    },")
+            
+            pdf.output("Covid_Cases_Dashboard.pdf",dest="F")
+
 if pages == "Spain, Autonomous Community":
-    data = get_data_db("project=Community", "ccaa_data")
+    data = get_data_db("All&project=Community", "ccaa_data")
 
     ca_names = [element["Community"] for element in data]
     ca_names.insert(0,"All")
@@ -165,62 +210,61 @@ if pages == "Spain, Autonomous Community":
         deaths_checkbox = st.checkbox("Deaths")
     with data_info[1]:
         vaccination_checkbox = st.checkbox("Vaccination")
-    
+
+    ccaa_data = None
+    ccaa_vac = None
     if chosen:
         if "All" in chosen:
-            ccaa_data = get_data_db("All","ccaa_data")
-            ccaa_vac = get_data_db("All","ccaa_vac")
+            if deaths_checkbox:
+                ccaa_data = get_data_db("All","ccaa_data")
+            if vaccination_checkbox:
+                ccaa_vac = get_data_db("All","ccaa_vac")
         else:
             query = f"Community="
             for i in chosen:
                 query += i+","
             query = query[:-1]
-            ccaa_data = get_data_db(query,"ccaa_data")
-            ccaa_vac = get_data_db(query,"ccaa_vac")
+            if deaths_checkbox:
+                ccaa_data = get_data_db(query,"ccaa_data")
+            if vaccination_checkbox:
+                ccaa_vac = get_data_db(query,"ccaa_vac")
 
-        show_dataframe(deaths_checkbox, vaccination_checkbox, ccaa_data, ccaa_vac)
-        
-        geospatial = geospatial_data(ccaa_data)
-        geospatial_map(geospatial)
+        dataframe_show = group_data(deaths_checkbox, vaccination_checkbox, ccaa_data, ccaa_vac)
 
+        if not dataframe_show.shape[0] == 0:
+            st.dataframe(dataframe_show)
+            geospatial = geospatial_data(dataframe_show)
+            geospatial_map(geospatial)
 
+    cols = st.beta_columns((2,1,2))
+    with cols[1]:
+        if st.button('Download PDF'):
+            pdf = FPDF()
+            pdf.add_page()
+            
+            pdf.set_font('Arial', 'BIU', 16)
+            pdf.write(16,"Data in JSON format\n")
 
-cols = st.beta_columns((2,1,2))
-with cols[1]:
-    if st.button('Download PDF'):
-        pdf = FPDF()
-        pdf.add_page(orientation="L", format="A3")
-        plt.savefig("Cases_dates.jpg")
-        pdf.image("./Cases_dates.jpg", w=400, h=260)
-        pdf.add_page()
+            pdf.set_font('Arial', '', 9)
+            column_ccaa = []
+            for column in dataframe_show.columns:
+                column_ccaa.append(column)
 
-        covid_cases_data = pd.DataFrame(data_global).drop(columns=["_id", "Lat", "Long"])
-        num_case_date = []
-
-        columns = [column for column in covid_cases_data.columns[1::periodo]]
-        columns.insert(0,covid_cases_data.columns[0])
-        for country in covid_cases_data.values: 
-            cases = [int(case) for case in country[1::periodo]]
-            cases.insert(0,country[0])
-            num_case_date.append(cases)
-        
-        pdf.set_font('Arial', 'BIU', 16)
-        pdf.write(16,"Data in JSON format\n")
-
-        pdf.set_font('Arial', '', 9)
-        for country in range(len(num_case_date)):
-            if country == 0:
-                pdf.write(5, "\n{")
-            pdf.write(5, "\n    {\n")
-            for position in range(len(columns)):
-                if position == len(columns)-1:
-                    pdf.write(5, f'        "{columns[position]}" : {num_case_date[country][position]}\n')
+            num_ccaa = 0
+            pdf.write(5, "\n{")
+            for ccaa in dataframe_show.values:
+                pdf.write(5, "\n    {\n")
+                for element in range(len(column_ccaa)):
+                    if element == len(column_ccaa)-1:
+                        pdf.write(5, f'        "{column_ccaa[element]}" : {ccaa[element]}\n')
+                    else:
+                        pdf.write(5, f'        "{column_ccaa[element]}" : {ccaa[element]},\n')
+                if num_ccaa == dataframe_show.shape[0] -1:
+                    pdf.write(5, "    }\n")
                 else:
-                    pdf.write(5, f'        "{columns[position]}" : {num_case_date[country][position]},\n')
-            if country == len(num_case_date)-1:
-                pdf.write(5, "    }\n")
-                pdf.write(5, "}\n")
-            else:
-                pdf.write(5, "    },")
-        
-        pdf.output("Covid_Cases_Dashboard.pdf",dest="F")
+                    pdf.write(5, "    },")
+                num_ccaa += 1
+            pdf.write(5, "}\n")
+            
+            pdf.output("Covid_Cases_CCAA_Dashboard.pdf",dest="F")
+
