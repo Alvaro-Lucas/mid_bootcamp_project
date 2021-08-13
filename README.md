@@ -78,6 +78,7 @@ The Download button work on the same way as the button in the first page, storag
 At the moment, tha API can receive get,update and delete requests. All the countries are included in the databse, so you can select the one you want, more than one or all of them. The endpoint to make the requests is:
 ```
 http://127.0.0.1:3500/get
+http://127.0.0.1:3500/post
 http://127.0.0.1:3500/update
 http://127.0.0.1:3500/delete
 ```
