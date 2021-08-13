@@ -1,6 +1,7 @@
-# mid_bootcamp_project
-Proyecto de mediados del bootcamp de Big Data &amp; Machine Learning
+# Informative Dashboard about Covid Pandemic
+Little proyect about an API and a Dashboard focused in the Covid Pandemic. The dashboard show information about the cases, deceases and vaccinations around the world.
 
+![myimagen](/img_readme/covid.png)
 
 ## Table of Content
 ---
@@ -20,20 +21,20 @@ Proyecto de mediados del bootcamp de Big Data &amp; Machine Learning
 ## Goals
 ---
 ### L1
-- [x] Crear Api en flask
-- [x] Crear Dashboard en streamlit
-- [x] Base de datos en **MongoDB** o PostgreSWL
+- [x] Create Api in flask
+- [x] Create Dashboard in streamlit
+- [x] Database in **MongoDB** or PostgreSWL
 ### L2
-- [x] Utilizar de datos geoespaciales y geoqueries en MongoDB o Postgres (Usando PostGIS)
-- [x] Tener la base de datos en el Cloud (Hay servicios gratis en MongoDB Atlas, Heroku Postgres, dentre otros)
-- [x] Generar reporte pdf de los datos visibles en Streamlit, descargable mediante boton.
-- [x] Un dashboard de multiples páginas en Streamlit
+- [x] Use of geospatial data and geoqueries in MongoDB or Postgres (Using PostGIS)
+- [x] Have the database in the Cloud (There are free services in MongoDB Atlas, Heroku Postgres, dentre others)
+- [x] Generate pdf report of the data visible in Streamlit, downloadable via button.
+- [x] A multi-page dashboard in Streamlit.
 ### L3
-- [ ] Que el dashboard te envie el reporte pdf por e-mail
-- [ ] Poder subir nuevos datos a la bbdd via la API (usuario y contraseña como headers del request)
+- [ ] Have the dashboard send you the pdf report by e-mail
+- [ ] To be able to upload new data to the database via API (username and password as request headers)
 ### L4
-- [ ] Poder actualizar la base de datos via Streamlit (con usuario y contraseña, en una página a parte. El dashboard debe hacer la petición anterior que añade datos via API)
-- [ ] Crear contenedor Docker y hacer deploy de los servicios en el cloud (Heroku. Los dos servicios deben subirse separadamente)
+- [ ] To be able to update the database via Streamlit (with username and password, in a separate page. The dashboard must make the previous request that adds data via API)
+- [ ] Create Docker container and deploy the services in the cloud (Heroku. The two services must be uploaded separately)
 
 ## Installation
 ---
@@ -158,7 +159,7 @@ To update data in the database, you must create a request that return the countr
     ```
     http://127.0.0.1:3500/update?query=Country/Region=Spain&new_data=8/3/21=81_793
     ```
-    
+
 ## Delete data
 To delete data, you also must put a wuery that returns you at least one country.
 - Lets delete Spain from the database so nobody see the disaster happened here ...
