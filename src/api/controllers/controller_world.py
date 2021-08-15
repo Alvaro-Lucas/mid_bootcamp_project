@@ -2,8 +2,8 @@ from utils.handle_error import handle_error
 from utils.json_response import json_response
 from utils.connection_db import *
 from utils.type_casting import type_casting, str_to_dict
-from utils.process_data import get_data_in_range, apply_interval
-from utils.shortcuts import dic_db_collection
+from utils.process_data import get_data_in_range, apply_interval, change_name_key
+from utils.shortcuts import dic_db_collection_world
 from flask import request
 import json
 from app import app
@@ -12,7 +12,7 @@ from app import app
 @handle_error
 def countries_names(db_collection):
     project = {"_id":0,"Country/Region":1}
-    data = read_database("mid_project", dic_db_collection[db_collection], project=project)
+    data = read_database("mid_project", dic_db_collection_world[db_collection], project=project)
 
     return json_response(data)
 
@@ -26,7 +26,7 @@ def list_countries_data(db_collection, countries):
     else:
         match = {}
     project = {"_id":0}
-    data = read_database("mid_project", dic_db_collection[db_collection], match, project)
+    data = read_database("mid_project", dic_db_collection_world[db_collection], match, project)
 
     return json_response(data)
 
@@ -47,11 +47,13 @@ def countries_coord(countries):
 @app.route("/<db_collection>/countries/total", methods = ['GET'])
 @handle_error
 def total_cases(db_collection):
-    sp_template = read_database("mid_project", dic_db_collection[db_collection], {"Country/Region":"Spain"})
+    sp_template = read_database("mid_project", dic_db_collection_world[db_collection], {"Country/Region":"Spain"})
     last_date = sp_template[0].popitem()[0]
 
     project = {"_id":0, "Country/Region":1, last_date:1}
-    data = read_database("mid_project", dic_db_collection[db_collection], project=project)
+    countries_total = read_database("mid_project", dic_db_collection_world[db_collection], project=project)
+
+    data = change_name_key(countries_total)
 
     return json_response(data)
 
@@ -64,15 +66,9 @@ def total_cases_per_country(db_collection, countries):
     match = {"Country/Region":{"$in":countries_list}}
     project = {"_id":0}
 
-    unprocessed = read_database("mid_project", dic_db_collection[db_collection], match, project)
-    data = []
-    for country in unprocessed:
-        country_data = {}
-        country_data["Country/Region"] = country["Country/Region"]
-        last_date = country.popitem()
-        country_data[last_date[0]] = last_date[1]
+    countries_total = read_database("mid_project", dic_db_collection_world[db_collection], match, project)
 
-        data.append(country_data)
+    data = change_name_key(countries_total)
 
     return json_response(data)
 
@@ -90,7 +86,7 @@ def range_date_countries(db_collection, countries, date_range=None):
     
     match = {"Country/Region":{"$in":countries_list}}
     project = {"_id":0}
-    countries_all_data = read_database("mid_project", dic_db_collection[db_collection], match, project)
+    countries_all_data = read_database("mid_project", dic_db_collection_world[db_collection], match, project)
 
     data = get_data_in_range(countries_all_data, date_range)
 
@@ -105,10 +101,9 @@ def interval_date_countries(db_collection, countries):
 
     match = {"Country/Region":{"$in":countries_list}}
     project = {"_id":0}
-    countries_all_data = read_database("mid_project", dic_db_collection[db_collection], match, project)
+    countries_all_data = read_database("mid_project", dic_db_collection_world[db_collection], match, project)
     
     data = apply_interval(countries_all_data, interval)
-
     return json_response(data)
 
 
@@ -118,7 +113,7 @@ def interval_date_range_countries(db_collection, countries, interval):
     interval = int(interval)
     date_range = dict(request.args)
     r_d_c = range_date_countries(db_collection, countries, date_range).json
-
+    print(f"{r_d_c =}")
     data = apply_interval(r_d_c, interval)
 
     return json_response(data)

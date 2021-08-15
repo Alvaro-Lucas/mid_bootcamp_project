@@ -17,17 +17,27 @@ def get_data_in_range(countries_all_data, range_date):
 
 def apply_interval(countries_all_data, interval):
     data = []
-    
-    try:
-        countries_all_data.pop("Lat")
-        countries_all_data.pop("Long")
-    except:
-        pass
 
     for country in countries_all_data:
         countries_refactor = {}
         countries_refactor["Country/Region"] = country["Country/Region"]
+
+        try:
+            country.pop("Lat")
+            country.pop("Long")
+        except:
+            pass
+
         for column in list(country.keys())[1::interval]:
             countries_refactor[column] = country[column]
         data.append(countries_refactor)
+    return data
+
+def change_name_key(countries_total):
+    data = []
+    for country in countries_total:
+        country_data = {}
+        country_data["Country/Region"] = country["Country/Region"]
+        country_data["Total"] = country.popitem()[1]
+        data.append(country_data)
     return data

@@ -1,7 +1,5 @@
-dic_db_collection = {
+dic_db_collection_world = {
     "covid" : "covid",
     "deaths":"deaths_covid",
-    "recovered":"recovered_covid",
-    "ccaa_data":"ccaa_covid_data",
-    "ccaa_vac":"ccaa_covid_vac"
+    "recovered":"recovered_covid"
 }
