@@ -2,16 +2,9 @@ from folium import Map, Marker
 from streamlit_folium import folium_static
 from fpdf import FPDF, HTMLMixin
 from selenium import webdriver
+from utils.type_casting import datetime_to_m_d_y
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
-
-def total_show_columns(data, country, color):
-    for c_cases in data:
-        if c_cases["Country/Region"] == country:
-            st.markdown(f"<h2 style='text-align:center; background-color:{color};'><b>Cases</b></h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='text-align:center'><b>{c_cases['Total']}</b></p>", unsafe_allow_html=True)
-
+import datetime
 
 def total_show(chosen, data_table):
     for country in chosen:
@@ -21,17 +14,11 @@ def total_show(chosen, data_table):
             with data_countries_columns[i]:
                 total_show_columns(data_table[i][0], country, data_table[i][1])
 
-
-def covid_cases_graph(data):
-    covid_cases_date = pd.DataFrame(data)
-    plt.figure(figsize=[20,10])
-    columns = [column for column in covid_cases_date.columns[1:]]
-    for country in covid_cases_date.values:
-        plt.ylabel('Cases')
-        plt.xlabel('Date')
-        plt.plot(columns, country[1:], label=country[0])
-        plt.legend()
-    return plt
+def total_show_columns(data, country, color):
+    for c_cases in data:
+        if c_cases["Country/Region"] == country:
+            st.markdown(f"<h2 style='text-align:center; background-color:{color};'><b>Cases</b></h2>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align:center'><b>{c_cases['Total']}</b></p>", unsafe_allow_html=True)
     
 
 def geospatial_map(geospatial, start_location = None ):
@@ -41,7 +28,28 @@ def geospatial_map(geospatial, start_location = None ):
     folium_static(m)
 
 
-#No he podido hacerlo funcionar
+def interval_option():
+    st.text('Enter the range of days between the dates (if boths are set at 0, the range will be 7 days)')
+    interval = 1
+    interval_column = st.beta_columns(2)
+    with interval_column[0]:
+        interval += st.slider('Days', min_value=0, max_value=30)  
+    with interval_column[1]:
+        interval += st.slider('Months', min_value=0, max_value=12)*30
+
+    return interval
+
+def rage_date_option():
+    st.write("Select the range on the date that wanted to show:")
+    date_range_column = st.beta_columns(2)
+    with date_range_column[0]:
+        start = st.date_input('Star date',value = datetime.date(2020, 1, 22), min_value=datetime.date(2020, 1, 22), max_value=datetime.date(2021, 8, 4))
+    with date_range_column[1]:
+        end = st.date_input('End date', value = datetime.date(2021, 8, 4), min_value=datetime.date(2020, 1, 22), max_value=datetime.date(2021, 8, 4))
+    
+    return (datetime_to_m_d_y(start), datetime_to_m_d_y(end))
+
+#No he podido hacerlo funcionar, selenium no me funciona
 def pdf_screenshot(Name):
     browser = webdriver.Firefox()
     browser.get("http://172.20.240.113:8501")
