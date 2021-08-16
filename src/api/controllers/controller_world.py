@@ -113,7 +113,6 @@ def interval_date_range_countries(db_collection, countries, interval):
     interval = int(interval)
     date_range = dict(request.args)
     r_d_c = range_date_countries(db_collection, countries, date_range).json
-    print(f"{r_d_c =}")
     data = apply_interval(r_d_c, interval)
 
     return json_response(data)

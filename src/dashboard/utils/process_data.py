@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import pandas as pd
 
 def data_merge(x,y):
     data = []
@@ -11,6 +13,7 @@ def data_merge(x,y):
         data.append(new_template)
     return data
 
+
 def change_key_name(data, original, new):
     new_data = []
     for element in data:
@@ -22,3 +25,16 @@ def change_key_name(data, original, new):
         new_data.append(template)
 
     return new_data 
+
+
+def covid_cases_graph(data):
+    covid_cases_date = pd.DataFrame(data)
+    plt.figure(figsize=[20,10])
+    columns = [column for column in covid_cases_date.columns[1:]]
+    for country in covid_cases_date.values:
+        plt.ylabel('Cases')
+        plt.xlabel('Date')
+        plt.xticks(rotation=75)
+        plt.plot(columns, country[1:], label=country[0])
+        plt.legend()
+    return plt
