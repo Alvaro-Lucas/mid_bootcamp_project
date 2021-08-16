@@ -8,11 +8,11 @@ from flask import request
 import json
 from app import app
 
-@app.route("/<db_collection>/countries", methods = ['GET'])
+@app.route("/countries", methods = ['GET'])
 @handle_error
-def countries_names(db_collection):
+def countries_names():
     project = {"_id":0,"Country/Region":1}
-    data = read_database("mid_project", dic_db_collection_world[db_collection], project=project)
+    data = read_database("mid_project", "covid", project=project)
 
     return json_response(data)
 

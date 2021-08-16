@@ -4,20 +4,6 @@ from utils.connection_db import *
 from flask import request
 from app import app
 
-
-def retrieve_data_from_db(communities, p_show):
-    if communities != "All":
-        match = {"Community":{"$in":list(communities.split(","))}}
-    else:
-        match = {}
-    project = {"_id":0}
-    for item in p_show:
-        project[item]=1
-
-    data = read_database("mid_project", "ccaa_covid_data", match, project)
-
-    return data
-
 @app.route("/ccaa_covid_data/communities", methods = ['GET'])
 @handle_error
 def communities_names():

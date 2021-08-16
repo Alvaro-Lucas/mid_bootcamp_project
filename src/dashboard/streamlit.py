@@ -9,7 +9,6 @@ pages = st.sidebar.radio("Select the range of the Covid pandemic: ", ["Worldwide
 
 if pages == "Worldwide":
     worldwide()
-
 if pages == "Spain, Autonomous Community":
     aacc()
 
