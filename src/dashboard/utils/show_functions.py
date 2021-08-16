@@ -1,10 +1,10 @@
 from folium import Map, Marker
 from streamlit_folium import folium_static
+from fpdf import FPDF, HTMLMixin
+from selenium import webdriver
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from selenium import webdriver
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 def total_show_columns(data, country, color):
     for c_cases in data:
@@ -35,18 +35,19 @@ def covid_cases_graph(data):
     
 
 def geospatial_map(geospatial, start_location = None ):
-    print(f"{geospatial =}")
     m = Map(start_location ,zoom_start=5)
     for location in geospatial:
         Marker(location=[location["Lat"], location["Long"]], tooltip=location["Name"]).add_to(m)
     folium_static(m)
 
-def pdf_screenshot():
-    #binary = FirefoxBinary(r"/mnt/c/Program\ Files/Mozilla\ Firefox/firefox.exe")
-    browser = webdriver.Firefox("/mnt/c/Program Files/Mozilla Firefox/")
-    browser.get('http://192.168.0.101:8501')
 
-    browser.get_screenshot_as_file("screenshot.pdf")
+#No he podido hacerlo funcionar
+def pdf_screenshot(Name):
+    browser = webdriver.Firefox()
+    browser.get("http://172.20.240.113:8501")
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.image(browser.get_screenshot_as_file(f"{Name}_image.png"))
+    browser.close()
     browser.quit()
-
-
+    pdf.output(f"{Name}.pdf",dest="F")

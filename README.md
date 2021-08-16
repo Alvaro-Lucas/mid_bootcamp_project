@@ -1,4 +1,7 @@
 # Informative Dashboard about Covid Pandemic
+![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)
+![forthebadge](/img_readme/stress-over-9000.svg)
+
 Little proyect about an API and a Dashboard focused in the Covid Pandemic. The dashboard show information about the cases, deceases and vaccinations around the world.
 
 ![myimagen](/img_readme/covid.png)
@@ -10,13 +13,8 @@ Little proyect about an API and a Dashboard focused in the Covid Pandemic. The d
 - [How to use it](#How-to-use-it)
 - [What expected to get](#What-expected-to-get)
 - [Requests to the API](#Requests-to-the-API)
-  - [Read Database](#Read-Database)
-    - [Get](#Get)
-    - [Project](#Project)
-    - [All together](#All-together)
-  - [Insert data](#Insert-data)
-  - [Update data](#Update-data)
-  - [Delete data](#Delete-data)
+  - [World Wide](#World-Wide)
+  - [Autonomous Communities](#Autonomous-Communities)
 
 ## Goals
 ---
@@ -71,99 +69,55 @@ The second page of the dashboard will focused on the cases in Autonomous Communi
 ![myimage](img_readme/CCAA.PNG)
 ![myimage](img_readme/CCAA_data.PNG)
 
-The Download button work on the same way as the button in the first page, storaging a pdf with the showed data in JSON format.
-
 ## Requests to the API
 ---
-At the moment, tha API can receive get,update and delete requests. All the countries are included in the databse, so you can select the one you want, more than one or all of them. The endpoint to make the requests is:
-```
-http://127.0.0.1:3500/get
-http://127.0.0.1:3500/post
-http://127.0.0.1:3500/update
-http://127.0.0.1:3500/delete
-```
-To acces to the data of the deceases, recovered, or the data of the Autonomous Communities of Spain, you must specified it just after the get endpoint.
+Next, we will put every API request with a small descripion about the expected response and, in case it need any web parameters, how to put them in the url.
 
-The data you can acces and the endpoint is listed in the next table.
+There will be variables where you have to write the names certain type of data. Below, we will show you how to identify the variables and the type of data you should write.
 
-|Database|Endpoint|
-|--------|--------|
-|Cases of covid|*It no need any endpoint|
-|Deceases|deaths|
-|Recovered|recovered|
-|Covid data of the Autonomous Communities|ccaa_data|
-|Vaccination data of the Autonomous Communities|ccaa_vac|
+Every variable will be represented between <>
+- **<db_collection>** There are 3 database from where you can get the data.
+  - covid: It contains the evolution over the time of the covid cases
+  - deaths: It contain the evolution of deceased people over the time 
+  - recovered: It contain the evolution of recovered people over the time
+- **\<countries>** In this variable, you must write the countries you want to get the data. This countries must be separated by commas without spaces. (Spain,Germany,Andorra,etc.)
 
-## Read Database
-### Get
-- To get the data of the vaccination in the Autonomous Communities of Spain, the request must be done to:
-```
-http://127.0.0.1:3500/get/ccaa_vac
-```
-
-- If what we want is to get all the data from the database selected, the Query Params must be "All"
-```
-http://127.0.0.1:3500/get/ccaa_vac?All
-```
-- If we want the cases data from a specific country, the Query Params must be "Country/Region":
-```
-http://127.0.0.1:3500/get?Country/Region=Germany
-```
-*To get the information of more than one countries, just name them separated by commas without spaces between them.
-
-- If what you want it's to get the countries that have more/less than X's cases of covid, deceases or recovered, the Query Parameter must be "Cuantity", followed by the correct mathematical symbol (<,>,>=,<=) and the number separated by commas.
-```
-http://127.0.0.1:3500/get?Cuantity=>,100_000
-
-                    or    
-
-http://127.0.0.1:3500/get?Cuantity=>,100000 
-```
-- To set a range, it must have the same order. That to say: "The countries that have more than or equal of 150_000 recovered and less than 300_000"
-```
-http://127.0.0.1:3500/get/recovered?Cuantity=>=,150_000,<,300_000
-```
-
-### Project
-- All of these request, return the name of the country with the data of the every days since the goberments start publicating the data but, if we only want to know the country or the total of people affected, we can do it by adding anotherQuery Parameter.
-```
-http://127.0.0.1:3500/get?project
-```
-- This alone wont work, you must specified the data you want to show. In this case, we can use "Country/Region" to get the name of the country or/and "Total", to get the total of people that have been affected, deceased or recovered by the covid pandemic. Remember that if you want to get both, you must separated them by commas without spaces.
-```
-http://127.0.0.1:3500/get?project=Country/Region,Total
-```
-
-### All together
--To end this section, we gonna show you a complete request using both parts, the get and the project. This will be the format than will need to have al the request. You can ommitted the project part but remember that the reponse you will obtain will be the cases, deceased or whatever for every day since the begining of the covid pandemic.
-- Simple requests
-  - The total cases of covid in Spain, Germany and Canada, showing the total number and the name of the country:
+### World Wide
+- `http://127.0.0.1:3500/countries` -> Return a JSON with all the names of the countries
+- `http://127.0.0.1:3500/<db_collection>/data/<countries>` -> Return a JSON with the data of the countries listed in \<countries> part.
+- `http://127.0.0.1:3500/coord/<countries>` ->Return a JSON with the coordenates of the selected countries
+- `http://127.0.0.1:3500/<db_collection>/countries/total` -> Return a JSON with the total people affected by the covid up to date.
+- `http://127.0.0.1:3500/<db_collection>/total/<countries>` -> Return a JSON of the total people affected by the covid for the selected countries.
+- `http://127.0.0.1:3500/<db_collection>/<countries>/date_range` -> Return a JSON with the data of the selected countries between two defined dates. For this request, you need to use web parameters. Here is and example:
   ```
-  http://127.0.0.1:3500/get?Country/Region=Spain,Germany,Canada&project=Country/Region,Total
+  http://127.0.0.1:3500/covid/Spain,Andorra/date_range?Start=4/23/20&End=6/23/20
   ```
-- More complex request
-  - From a list of countries (**Spain, Andorra, Canada, Afghanistan, Bangladesh, Botswana, Chile, Colombia, Indonesia, India, Iran**), I want to get all of them that the number of deceased are between 50_00 and 100_000 and show me the name of the country and the total of deceased.
+  As we can see, the web parameters must be **Start** and **End** and the date must be **mm/dd/yy**
+- `http://127.0.0.1:3500/<db_collection>/<countries>/date_interval` -> Return a JSON with the data of the selected countries but with an intervale between the dates specified by web parameter. Here is an example:
   ```
-  http://127.0.0.1:3500/get/deaths?Country/Region=Spain,Andorra,Canada,Afghanistan,Bangladesh,Botswana,Chile,Colombia,Indonesia,India,Iran&Cuantity=>=,50_000,<=,100_000&project=Country/Region,Total
+  http://127.0.0.1:3500/covid/Spain,Andorra/date_interval?7
   ```
+- `http://127.0.0.1:3500/<db_collection>/<countries>/<interval>/date_range` -> This is and union between two requests. The interval request and the date range. It let you specified a range of dates and, in that range, set an interval betweem days. For example:
+  ```
+  http://127.0.0.1:3500/covid/Spain,Andorra/7/date_range?Start=4/23/20&End=7/23/20
+  ```
+  This request will return a JSON with the data between 4/23/20 and 7/23/20 but, only every 7 days. The result it's that you will get the data of the dat 23/4/20, follow by 30/4/20, 7/5/20, etc. Until 7/23/20.
 
-## Insert data
-To insert new data to the databse, you must pass to the request the new data in the same format you did the lasts requests. Every Query Parameter is a new column, and the value of the Query Parameter the value of the column.
-- Want to add the EEUU to the databse and only with one column, the total cases of covid up to date.
-    ```
-    http://127.0.0.1:3500/post?query=Country/Region=EEUU&8/13/21=36_868_469
-    ```
+### Autonomous Communities
+The variables in this request are a little different than the request of the countries. Now we will show the possible values:
+- **<db_collection>** In this case, there is only 2 databases
+  - ccaa_covid_data -> Contain the data of the covid for every Autonomous Community
+  - ccaa_covid_vac -> Contain the data of the vaccination for every Autonomous Community
+- **\<communities>** You must write the names of the autonomous communities you want to get the data. The format is the same as the \<countries> variable.
 
-## Update data
-To update data in the database, you must create a request that return the country that you want to modify and then set the field that you want to change. For example:
-- Want to change the total of cases in Spain at date 8/3/21. The real number of decease were 81_793
-    ```
-    http://127.0.0.1:3500/update?query=Country/Region=Spain&new_data=8/3/21=81_793
-    ```
 
-## Delete data
-To delete data, you also must put a wuery that returns you at least one country.
-- Lets delete Spain from the database so nobody see the disaster happened here ...
-    ```
-    http://127.0.0.1:3500/delete?Country/Region=Spain
-    ```
+- `http://127.0.0.1:3500/ccaa_covid_data/communities` -> Return a JSON with the data of the covid for every Autonomous Community
+- `http://127.0.0.1:3500/<db_collection>/<communities>/data` -> Return a JSON with the data for the selected Autonomous Communities for the specified collection.
+- `http://127.0.0.1:3500/<communities>/coord` -> Return a JSON with the coordenates 
+- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/population` -> Return a JSON with the total population for the selected Autonomous Communities.
+- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/cases` -> Return a JSON with the total cases for the selected Autonomous Communities
+- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/deceased` -> Return a JSON with the total deceased for the selected Autonomous Communities
+- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/doses` -> Return a JSON with the total doses distributed for the selected Autonomous Communities
+- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/vaccinated_people` -> Return a JSON with the total number of people vaccinated with the first dose for the selected Autonomous Communities
+- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/full_vaccinated` -> Return a JSON with the total number of people that have received all their doses for the selected Autonomous Communities
+- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/%_vaccinated` -> Return a JSON with the percent of vaccinated people for the selected Autonomous Communities
