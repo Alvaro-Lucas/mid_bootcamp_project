@@ -83,23 +83,23 @@ Every variable will be represented between <>
 - **\<countries>** In this variable, you must write the countries you want to get the data. This countries must be separated by commas without spaces. (Spain,Germany,Andorra,etc.)
 
 ### World Wide
-- `http://127.0.0.1:3500/countries` -> Return a JSON with all the names of the countries
-- `http://127.0.0.1:3500/<db_collection>/data/<countries>` -> Return a JSON with the data of the countries listed in \<countries> part.
-- `http://127.0.0.1:3500/coord/<countries>` ->Return a JSON with the coordenates of the selected countries
-- `http://127.0.0.1:3500/<db_collection>/countries/total` -> Return a JSON with the total people affected by the covid up to date.
-- `http://127.0.0.1:3500/<db_collection>/total/<countries>` -> Return a JSON of the total people affected by the covid for the selected countries.
-- `http://127.0.0.1:3500/<db_collection>/<countries>/date_range` -> Return a JSON with the data of the selected countries between two defined dates. For this request, you need to use web parameters. Here is and example:
+- `https://covid-evolution-api.herokuapp.com/countries` -> Return a JSON with all the names of the countries
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/data/<countries>` -> Return a JSON with the data of the countries listed in \<countries> part.
+- `https://covid-evolution-api.herokuapp.com/coord/<countries>` ->Return a JSON with the coordenates of the selected countries
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/countries/total` -> Return a JSON with the total people affected by the covid up to date.
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/total/<countries>` -> Return a JSON of the total people affected by the covid for the selected countries.
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/<countries>/date_range` -> Return a JSON with the data of the selected countries between two defined dates. For this request, you need to use web parameters. Here is and example:
   ```
-  http://127.0.0.1:3500/covid/Spain,Andorra/date_range?Start=4/23/20&End=6/23/20
+  https://covid-evolution-api.herokuapp.com/covid/Spain,Andorra/date_range?Start=4/23/20&End=6/23/20
   ```
   As we can see, the web parameters must be **Start** and **End** and the date must be **mm/dd/yy**
-- `http://127.0.0.1:3500/<db_collection>/<countries>/date_interval` -> Return a JSON with the data of the selected countries but with an intervale between the dates specified by web parameter. Here is an example:
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/<countries>/date_interval` -> Return a JSON with the data of the selected countries but with an intervale between the dates specified by web parameter. Here is an example:
   ```
-  http://127.0.0.1:3500/covid/Spain,Andorra/date_interval?7
+  https://covid-evolution-api.herokuapp.com/covid/Spain,Andorra/date_interval?7
   ```
-- `http://127.0.0.1:3500/<db_collection>/<countries>/<interval>/date_range` -> This is and union between two requests. The interval request and the date range. It let you specified a range of dates and, in that range, set an interval betweem days. For example:
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/<countries>/<interval>/date_range` -> This is and union between two requests. The interval request and the date range. It let you specified a range of dates and, in that range, set an interval betweem days. For example:
   ```
-  http://127.0.0.1:3500/covid/Spain,Andorra/7/date_range?Start=4/23/20&End=7/23/20
+  https://covid-evolution-api.herokuapp.com/covid/Spain,Andorra/7/date_range?Start=4/23/20&End=7/23/20
   ```
   This request will return a JSON with the data between 4/23/20 and 7/23/20 but, only every 7 days. The result it's that you will get the data of the dat 23/4/20, follow by 30/4/20, 7/5/20, etc. Until 7/23/20.
 
@@ -111,13 +111,13 @@ The variables in this request are a little different than the request of the cou
 - **\<communities>** You must write the names of the autonomous communities you want to get the data. The format is the same as the \<countries> variable.
 
 
-- `http://127.0.0.1:3500/ccaa_covid_data/communities` -> Return a JSON with the data of the covid for every Autonomous Community
-- `http://127.0.0.1:3500/<db_collection>/<communities>/data` -> Return a JSON with the data for the selected Autonomous Communities for the specified collection.
-- `http://127.0.0.1:3500/<communities>/coord` -> Return a JSON with the coordenates 
-- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/population` -> Return a JSON with the total population for the selected Autonomous Communities.
-- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/cases` -> Return a JSON with the total cases for the selected Autonomous Communities
-- `http://127.0.0.1:3500/ccaa_covid_data/<communities>/deceased` -> Return a JSON with the total deceased for the selected Autonomous Communities
-- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/doses` -> Return a JSON with the total doses distributed for the selected Autonomous Communities
-- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/vaccinated_people` -> Return a JSON with the total number of people vaccinated with the first dose for the selected Autonomous Communities
-- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/full_vaccinated` -> Return a JSON with the total number of people that have received all their doses for the selected Autonomous Communities
-- `http://127.0.0.1:3500/ccaa_covid_vac/<communities>/%_vaccinated` -> Return a JSON with the percent of vaccinated people for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_data/communities` -> Return a JSON with the data of the covid for every Autonomous Community
+- `https://covid-evolution-api.herokuapp.com/<db_collection>/<communities>/data` -> Return a JSON with the data for the selected Autonomous Communities for the specified collection.
+- `https://covid-evolution-api.herokuapp.com/<communities>/coord` -> Return a JSON with the coordenates 
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_data/<communities>/population` -> Return a JSON with the total population for the selected Autonomous Communities.
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_data/<communities>/cases` -> Return a JSON with the total cases for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_data/<communities>/deceased` -> Return a JSON with the total deceased for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_vac/<communities>/doses` -> Return a JSON with the total doses distributed for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_vac/<communities>/vaccinated_people` -> Return a JSON with the total number of people vaccinated with the first dose for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_vac/<communities>/full_vaccinated` -> Return a JSON with the total number of people that have received all their doses for the selected Autonomous Communities
+- `https://covid-evolution-api.herokuapp.com/ccaa_covid_vac/<communities>/%_vaccinated` -> Return a JSON with the percent of vaccinated people for the selected Autonomous Communities
