@@ -2,7 +2,7 @@
 ![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)
 ![forthebadge](/img_readme/stress-over-9000.svg)
 
-Little proyect about an API and a Dashboard focused in the Covid Pandemic. The dashboard show information about the cases, deceases and vaccinations around the world.
+Little proyect about an API and a [Dashboard](https://covid-evolution-dashboard.herokuapp.com/) focused in the Covid Pandemic. The dashboard show information about the cases, deceases and vaccinations around the world.
 
 ![myimagen](/img_readme/covid.png)
 
