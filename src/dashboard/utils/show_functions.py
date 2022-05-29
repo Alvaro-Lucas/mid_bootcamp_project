@@ -9,7 +9,7 @@ import datetime
 def total_show(chosen, data_table):
     cols = ["Total Cases", "Deaths", "Recovered"]
     for country in chosen:
-        st.markdown(f"\n<h3 style='text-align:center; background-color:orange;'><b>{country}</b></h3>", unsafe_allow_html=True)
+        st.markdown(f"\n<h4 style='text-align:center; background-color:orange;'><b>{country}</b></h4>", unsafe_allow_html=True)
         data_countries_columns = st.columns(3)
         for i in range(3):
             with data_countries_columns[i]:
@@ -19,8 +19,9 @@ def total_show_columns(data, country, color, col_name):
     print(data)
     for i, c_cases in enumerate(data):
         if c_cases["Country/Region"] == country:
-            st.markdown(f"<h2 style='text-align:center; background-color:{color};'><b>{col_name}</b></h2>", unsafe_allow_html=True)
-            st.markdown(f"<p style='text-align:center'><b>{c_cases['Total']}</b></p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align:center; background-color:{color};'><b>{col_name}</b></p>", unsafe_allow_html=True)
+            st.markdown(f"<p style='text-align:center; background-color:grey;'><b>{c_cases['Total']}</b></p>", unsafe_allow_html=True)
+            st.markdown(f"\n", unsafe_allow_html=True)
     
 
 def geospatial_map(geospatial, start_location = None ):
